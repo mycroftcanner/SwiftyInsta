@@ -11,7 +11,7 @@ import WebKit
 
 // MARK: Views
 @available(iOS 11, OSX 10.13, macCatalyst 13, *)
-public class LoginWebView: WKWebView, WKNavigationDelegate {
+public class LoginWebView: WKWebView, WKNavigationDelegate, WKHTTPCookieStoreObserver {
     /// Called when reaching the end of the login flow.
     /// You should probably hide the `InstagramLoginWebView` and notify the user with an activity indicator.
     public var didReachEndOfLoginFlow: (() -> Void)?
@@ -107,7 +107,7 @@ public class LoginWebView: WKWebView, WKNavigationDelegate {
 
   private func tryFetchCookies() {
     guard self.cookies == nil else { return }
-    
+
     self.configuration.websiteDataStore.httpCookieStore
       .getAllCookies(self.processCookies)
   }
@@ -125,6 +125,13 @@ public class LoginWebView: WKWebView, WKNavigationDelegate {
     navigationDelegate = nil
     // notify user.
     completionHandler?(.success(filtered))
+  }
+
+  private func deleteAllCookies(completionHandler: @escaping () -> Void = { }) {
+    HTTPCookieStorage.shared.removeCookies(since: Date.distantPast)
+    WKWebsiteDataStore.default().removeData(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(),
+                                            modifiedSince: .distantPast,
+                                            completionHandler: completionHandler)
   }
 
   // MARK: Navigation delegate

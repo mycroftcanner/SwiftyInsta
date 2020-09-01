@@ -69,8 +69,20 @@ public class LoginWebView: WKWebView, WKNavigationDelegate {
                                   "AppleWebKit/605.1.15 (KHTML, like Gecko)",
                                   "Mobile/15E148"].joined(separator: " ")
 
-            // load request.
-            me.load(URLRequest(url: url))
+          let igCB = HTTPCookie(
+              properties: [
+                  .domain: "instagram.com",
+                  .path: "/",
+                  .name: "ig_cb",
+                  .value: "1",
+                  .secure: "TRUE",
+              ]
+          )!
+
+          me.configuration.websiteDataStore.httpCookieStore.setCookie(igCB) {
+              // load request.
+              me.load(URLRequest(url: url))
+          }
         }
     }
 

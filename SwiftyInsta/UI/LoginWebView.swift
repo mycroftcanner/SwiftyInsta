@@ -64,21 +64,38 @@ public class LoginWebView: WKWebView, WKNavigationDelegate {
     // update completion handler.
     self.completionHandler = completionHandler
     // wipe all cookies and wait to load.
-    guard let url = URL(string: "https://www.instagram.com/accounts/login/") else {
-      return completionHandler(.failure(GenericError.custom("Invalid URL.")))
-    }
-    #if os(iOS) && !targetEnvironment(macCatalyst)
-    let deviceVersion = UIDevice.current.systemVersion.replacingOccurrences(of: ".", with: "_")
-    me.customUserAgent = ["Mozilla/5.0 (iPhone; CPU iPhone OS \(deviceVersion) like Mac OS X)",
-                          "AppleWebKit/605.1.15 (KHTML, like Gecko)",
-                          "Mobile/15E148"].joined(separator: " ")
-    #else
-    me.customUserAgent = ["Mozilla/5.0 (iPhone; CPU iPhone OS 13_4_1 like Mac OS X)",
-                          "AppleWebKit/605.1.15 (KHTML, like Gecko)",
-                          "Mobile/15E148"].joined(separator: " ")
-    #endif
+    deleteAllCookies { [weak self] in
+      guard let me = self else { return completionHandler(.failure(GenericError.weakObjectReleased)) }
+      guard let url = URL(string: "https://www.instagram.com/accounts/login/") else {
+        return completionHandler(.failure(GenericError.custom("Invalid URL.")))
+      }
 
-    load(URLRequest(url: url))
+      #if os(iOS) && !targetEnvironment(macCatalyst)
+      let deviceVersion = UIDevice.current.systemVersion.replacingOccurrences(of: ".", with: "_")
+      me.customUserAgent = ["Mozilla/5.0 (iPhone; CPU iPhone OS \(deviceVersion) like Mac OS X)",
+                            "AppleWebKit/605.1.15 (KHTML, like Gecko)",
+                            "Mobile/15E148"].joined(separator: " ")
+      #else
+      me.customUserAgent = ["Mozilla/5.0 (iPhone; CPU iPhone OS 13_4_1 like Mac OS X)",
+                            "AppleWebKit/605.1.15 (KHTML, like Gecko)",
+                            "Mobile/15E148"].joined(separator: " ")
+      #endif
+
+      let igCB = HTTPCookie(
+        properties: [
+          .domain: "instagram.com",
+          .path: "/",
+          .name: "ig_cb",
+          .value: "1",
+          .secure: "TRUE",
+        ]
+      )!
+
+      me.configuration.websiteDataStore.httpCookieStore.setCookie(igCB) {
+        // load request.
+        me.load(URLRequest(url: url))
+      }
+    }
   }
 
   // MARK: Clean cookies

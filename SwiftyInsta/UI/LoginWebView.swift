@@ -124,8 +124,7 @@ public class LoginWebView: WKWebView, WKNavigationDelegate {
             // fetch cookies.
             tryFetchingCookies()
         default:
-            // try fetching cookies.
-            tryFetchingCookies()
+            break
         }
     }
 }

@@ -101,8 +101,6 @@ public class LoginWebView: WKWebView, WKNavigationDelegate {
                     && !$0.value.isEmpty
             }
             guard filtered.count >= 3 else { return }
-            // notify completion.
-            self?.didReachEndOfLoginFlow?()
             // no need to check anymore.
             self?.navigationDelegate = nil
             // notify user.
@@ -121,12 +119,9 @@ public class LoginWebView: WKWebView, WKNavigationDelegate {
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         switch webView.url?.absoluteString {
         case "https://www.instagram.com/"?:
-            // notify user.
             didReachEndOfLoginFlow?()
             // fetch cookies.
-            fetchCookies()
-            // no need to check anymore.
-            navigationDelegate = nil
+            tryFetchingCookies()
         default:
             // try fetching cookies.
             tryFetchingCookies()

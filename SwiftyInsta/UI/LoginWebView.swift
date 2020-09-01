@@ -105,6 +105,7 @@ public class LoginWebView: WKWebView, WKNavigationDelegate {
             self?.navigationDelegate = nil
             // notify user.
             self?.completionHandler?(.success($0))
+            self?.completionHandler = nil
         }
     }
 

@@ -121,6 +121,7 @@ public class LoginWebView: WKWebView, WKNavigationDelegate {
         switch webView.url?.absoluteString {
         case "https://www.instagram.com/"?:
             didReachEndOfLoginFlow?()
+        case "/accounts/onetap/?next=%2F"?:
             // fetch cookies.
             tryFetchingCookies()
         default:

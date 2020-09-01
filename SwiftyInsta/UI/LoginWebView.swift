@@ -118,10 +118,11 @@ public class LoginWebView: WKWebView, WKNavigationDelegate {
 
     // MARK: Navigation delegate
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+      print(webView.url!.absoluteString)
         switch webView.url?.absoluteString {
         case "https://www.instagram.com/"?:
             didReachEndOfLoginFlow?()
-        case "/accounts/onetap/?next=%2F"?:
+        case "https://www.instagram.com/accounts/onetap/?next=%2F"?:
             // fetch cookies.
             tryFetchingCookies()
         default:

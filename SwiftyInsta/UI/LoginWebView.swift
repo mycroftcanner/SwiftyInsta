@@ -120,6 +120,8 @@ public class LoginWebView: WKWebView, WKNavigationDelegate, WKHTTPCookieStoreObs
   public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
     print(webView.url!.absoluteString)
     switch webView.url?.absoluteString {
+    case "https://www.instagram.com/#reactivated":
+      load(URLRequest(url: URL(string: "https://www.instagram.com/accounts/login/")!))
     case "https://www.instagram.com/"?:
       didReachEndOfLoginFlow?()
       tryFetchCookies()

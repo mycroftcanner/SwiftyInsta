@@ -81,12 +81,9 @@ public class LoginWebView: WKWebView, WKNavigationDelegate, WKHTTPCookieStoreObs
 
   private func tryFetchCookies() {
     guard self.cookies == nil else { return }
-
-    DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
-      guard let self = self else { return }
-      self.configuration.websiteDataStore.httpCookieStore
-        .getAllCookies(self.processCookies)
-    }
+    
+    self.configuration.websiteDataStore.httpCookieStore
+      .getAllCookies(self.processCookies)
   }
 
   private func processCookies(_ cookies: [HTTPCookie]) {

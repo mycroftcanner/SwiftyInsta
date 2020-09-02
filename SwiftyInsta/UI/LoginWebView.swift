@@ -28,12 +28,10 @@ public class LoginWebView: WKWebView, WKNavigationDelegate, WKHTTPCookieStoreObs
   }
 
   public init(frame: CGRect, didReachEndOfLoginFlow: (() -> Void)? = nil) {
-    // delete all cookies.
-    HTTPCookieStorage.shared.removeCookies(since: Date.distantPast)
     // update the process pool.
-
     let configuration = WKWebViewConfiguration()
     configuration.processPool = WKProcessPool()
+    configuration.websiteDataStore = .nonPersistent()
 
     self.didReachEndOfLoginFlow = didReachEndOfLoginFlow
 
@@ -61,20 +59,17 @@ public class LoginWebView: WKWebView, WKNavigationDelegate, WKHTTPCookieStoreObs
     // update completion handler.
     self.completionHandler = completionHandler
     // wipe all cookies and wait to load.
-    deleteAllCookies { [weak self] in
-      guard let me = self else { return completionHandler(.failure(GenericError.weakObjectReleased)) }
-      guard let url = URL(string: "https://www.instagram.com/accounts/login/") else {
-        return completionHandler(.failure(GenericError.custom("Invalid URL.")))
-      }
-      // in some iOS versions, use-agent needs to be different.
-      // this use-agent works on iOS 11.4 and iOS 12.0+
-      // but it won't work on lower versions.
-      me.customUserAgent = ["Mozilla/5.0 (iPhone; CPU iPhone OS 13_4_1 like Mac OS X)",
-                            "AppleWebKit/605.1.15 (KHTML, like Gecko)",
-                            "Mobile/15E148"].joined(separator: " ")
-
-      me.load(URLRequest(url: url))
+    guard let url = URL(string: "https://www.instagram.com/accounts/login/") else {
+      return completionHandler(.failure(GenericError.custom("Invalid URL.")))
     }
+    // in some iOS versions, use-agent needs to be different.
+    // this use-agent works on iOS 11.4 and iOS 12.0+
+    // but it won't work on lower versions.
+    customUserAgent = ["Mozilla/5.0 (iPhone; CPU iPhone OS 13_4_1 like Mac OS X)",
+                          "AppleWebKit/605.1.15 (KHTML, like Gecko)",
+                          "Mobile/15E148"].joined(separator: " ")
+
+    load(URLRequest(url: url))
   }
 
   // MARK: Clean cookies
@@ -107,13 +102,6 @@ public class LoginWebView: WKWebView, WKNavigationDelegate, WKHTTPCookieStoreObs
     navigationDelegate = nil
     // notify user.
     completionHandler?(.success(filtered))
-  }
-
-  private func deleteAllCookies(completionHandler: @escaping () -> Void = { }) {
-    HTTPCookieStorage.shared.removeCookies(since: Date.distantPast)
-    WKWebsiteDataStore.default().removeData(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(),
-                                            modifiedSince: .distantPast,
-                                            completionHandler: completionHandler)
   }
 
   // MARK: Navigation delegate

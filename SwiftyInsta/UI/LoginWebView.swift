@@ -6,18 +6,23 @@
 //  Copyright © 2019 Mahdi. All rights reserved.
 //
 
-#if os(iOS)
-import UIKit
+#if canImport(WebKit)
 import WebKit
 
 // MARK: Views
-@available(iOS 12, *)
-public class LoginWebView: WKWebView, WKNavigationDelegate, WKHTTPCookieStoreObserver {
-  /// Called when reaching the end of the login flow.
-  /// You should probably hide the `InstagramLoginWebView` and notify the user with an activity indicator.
-  public var didReachEndOfLoginFlow: (() -> Void)?
-  /// Called once the flow is completed.
-  var completionHandler: ((Result<[HTTPCookie], Error>) -> Void)!
+@available(iOS 11, OSX 10.13, macCatalyst 13, *)
+public class LoginWebView: WKWebView, WKNavigationDelegate {
+    /// Called when reaching the end of the login flow.
+    /// You should probably hide the `InstagramLoginWebView` and notify the user with an activity indicator.
+    public var didReachEndOfLoginFlow: (() -> Void)?
+    /// Called once the flow is completed.
+    var completionHandler: ((Result<[HTTPCookie], Error>) -> Void)!
+
+    // MARK: Init
+    @available(*, unavailable, message: "using a custom `userAgent` is no longer supported")
+    public init(frame: CGRect, userAgent: String?, didReachEndOfLoginFlow: (() -> Void)? = nil) {
+        fatalError("Unavailable method.")
+    }
 
   var cookies: [HTTPCookie]?
 
@@ -62,12 +67,16 @@ public class LoginWebView: WKWebView, WKNavigationDelegate, WKHTTPCookieStoreObs
     guard let url = URL(string: "https://www.instagram.com/accounts/login/") else {
       return completionHandler(.failure(GenericError.custom("Invalid URL.")))
     }
-    // in some iOS versions, use-agent needs to be different.
-    // this use-agent works on iOS 11.4 and iOS 12.0+
-    // but it won't work on lower versions.
-    customUserAgent = ["Mozilla/5.0 (iPhone; CPU iPhone OS 13_4_1 like Mac OS X)",
+    #if os(iOS) && !targetEnvironment(macCatalyst)
+    let deviceVersion = UIDevice.current.systemVersion.replacingOccurrences(of: ".", with: "_")
+    me.customUserAgent = ["Mozilla/5.0 (iPhone; CPU iPhone OS \(deviceVersion) like Mac OS X)",
                           "AppleWebKit/605.1.15 (KHTML, like Gecko)",
                           "Mobile/15E148"].joined(separator: " ")
+    #else
+    me.customUserAgent = ["Mozilla/5.0 (iPhone; CPU iPhone OS 13_4_1 like Mac OS X)",
+                          "AppleWebKit/605.1.15 (KHTML, like Gecko)",
+                          "Mobile/15E148"].joined(separator: " ")
+    #endif
 
     load(URLRequest(url: url))
   }

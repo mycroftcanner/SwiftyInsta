@@ -18,12 +18,6 @@ public class LoginWebView: WKWebView, WKNavigationDelegate, WKHTTPCookieStoreObs
     /// Called once the flow is completed.
     var completionHandler: ((Result<[HTTPCookie], Error>) -> Void)!
 
-    // MARK: Init
-    @available(*, unavailable, message: "using a custom `userAgent` is no longer supported")
-    public init(frame: CGRect, userAgent: String?, didReachEndOfLoginFlow: (() -> Void)? = nil) {
-        fatalError("Unavailable method.")
-    }
-
   var cookies: [HTTPCookie]?
 
   // MARK: Init
@@ -64,45 +58,19 @@ public class LoginWebView: WKWebView, WKNavigationDelegate, WKHTTPCookieStoreObs
     // update completion handler.
     self.completionHandler = completionHandler
     // wipe all cookies and wait to load.
-    deleteAllCookies { [weak self] in
-      guard let me = self else { return completionHandler(.failure(GenericError.weakObjectReleased)) }
-      guard let url = URL(string: "https://www.instagram.com/accounts/login/") else {
-        return completionHandler(.failure(GenericError.custom("Invalid URL.")))
-      }
-
-      #if os(iOS) && !targetEnvironment(macCatalyst)
-      let deviceVersion = UIDevice.current.systemVersion.replacingOccurrences(of: ".", with: "_")
-      me.customUserAgent = ["Mozilla/5.0 (iPhone; CPU iPhone OS \(deviceVersion) like Mac OS X)",
-                            "AppleWebKit/605.1.15 (KHTML, like Gecko)",
-                            "Mobile/15E148"].joined(separator: " ")
-      #else
-      me.customUserAgent = ["Mozilla/5.0 (iPhone; CPU iPhone OS 13_4_1 like Mac OS X)",
-                            "AppleWebKit/605.1.15 (KHTML, like Gecko)",
-                            "Mobile/15E148"].joined(separator: " ")
-      #endif
-
-      let igCB = HTTPCookie(
-        properties: [
-          .domain: "instagram.com",
-          .path: "/",
-          .name: "ig_cb",
-          .value: "1",
-          .secure: "TRUE",
-        ]
-      )!
-
-      me.configuration.websiteDataStore.httpCookieStore.setCookie(igCB) {
-        // load request.
-        me.load(URLRequest(url: url))
-      }
-
+    guard let url = URL(string: "https://www.instagram.com/accounts/login/") else {
+      return completionHandler(.failure(GenericError.custom("Invalid URL.")))
     }
-    // in some iOS versions, use-agent needs to be different.
-    // this use-agent works on iOS 11.4 and iOS 12.0+
-    // but it won't work on lower versions.
-    customUserAgent = ["Mozilla/5.0 (iPhone; CPU iPhone OS 13_4_1 like Mac OS X)",
+    #if os(iOS) && !targetEnvironment(macCatalyst)
+    let deviceVersion = UIDevice.current.systemVersion.replacingOccurrences(of: ".", with: "_")
+    me.customUserAgent = ["Mozilla/5.0 (iPhone; CPU iPhone OS \(deviceVersion) like Mac OS X)",
                           "AppleWebKit/605.1.15 (KHTML, like Gecko)",
                           "Mobile/15E148"].joined(separator: " ")
+    #else
+    me.customUserAgent = ["Mozilla/5.0 (iPhone; CPU iPhone OS 13_4_1 like Mac OS X)",
+                          "AppleWebKit/605.1.15 (KHTML, like Gecko)",
+                          "Mobile/15E148"].joined(separator: " ")
+    #endif
 
     load(URLRequest(url: url))
   }

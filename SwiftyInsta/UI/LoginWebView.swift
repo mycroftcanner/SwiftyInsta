@@ -63,11 +63,11 @@ public class LoginWebView: WKWebView, WKNavigationDelegate, WKHTTPCookieStoreObs
     }
     #if os(iOS) && !targetEnvironment(macCatalyst)
     let deviceVersion = UIDevice.current.systemVersion.replacingOccurrences(of: ".", with: "_")
-    me.customUserAgent = ["Mozilla/5.0 (iPhone; CPU iPhone OS \(deviceVersion) like Mac OS X)",
+    customUserAgent = ["Mozilla/5.0 (iPhone; CPU iPhone OS \(deviceVersion) like Mac OS X)",
                           "AppleWebKit/605.1.15 (KHTML, like Gecko)",
                           "Mobile/15E148"].joined(separator: " ")
     #else
-    me.customUserAgent = ["Mozilla/5.0 (iPhone; CPU iPhone OS 13_4_1 like Mac OS X)",
+    customUserAgent = ["Mozilla/5.0 (iPhone; CPU iPhone OS 13_4_1 like Mac OS X)",
                           "AppleWebKit/605.1.15 (KHTML, like Gecko)",
                           "Mobile/15E148"].joined(separator: " ")
     #endif

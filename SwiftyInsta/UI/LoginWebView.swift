@@ -37,6 +37,28 @@ public class LoginWebView: WKWebView, WKNavigationDelegate, WKHTTPCookieStoreObs
     super.init(frame: frame, configuration: configuration)
     navigationDelegate = self
   }
+  
+  // MARK: Log in
+  func authenticate(completionHandler: @escaping (Result<[HTTPCookie], Error>) -> Void) {
+    // update completion handler.
+    self.completionHandler = completionHandler
+    // wipe all cookies and wait to load.
+    guard let url = URL(string: "https://www.instagram.com/accounts/login/") else {
+      return completionHandler(.failure(GenericError.custom("Invalid URL.")))
+    }
+    #if os(iOS) && !targetEnvironment(macCatalyst)
+    let deviceVersion = UIDevice.current.systemVersion.replacingOccurrences(of: ".", with: "_")
+    me.customUserAgent = ["Mozilla/5.0 (iPhone; CPU iPhone OS \(deviceVersion) like Mac OS X)",
+                          "AppleWebKit/605.1.15 (KHTML, like Gecko)",
+                          "Mobile/15E148"].joined(separator: " ")
+    #else
+    me.customUserAgent = ["Mozilla/5.0 (iPhone; CPU iPhone OS 13_4_1 like Mac OS X)",
+                          "AppleWebKit/605.1.15 (KHTML, like Gecko)",
+                          "Mobile/15E148"].joined(separator: " ")
+    #endif
+    
+    load(URLRequest(url: url))
+  }
 
   @available(*, unavailable, message: "use `init(frame:didReachEndOfLoginFlow:)` instead.")
   public init(frame: CGRect,
@@ -51,28 +73,6 @@ public class LoginWebView: WKWebView, WKNavigationDelegate, WKHTTPCookieStoreObs
   @available(*, unavailable)
   public required init?(coder: NSCoder) {
     fatalError("init(coder:) has not been implemented")
-  }
-
-  // MARK: Log in
-  func authenticate(completionHandler: @escaping (Result<[HTTPCookie], Error>) -> Void) {
-    // update completion handler.
-    self.completionHandler = completionHandler
-    // wipe all cookies and wait to load.
-    guard let url = URL(string: "https://www.instagram.com/accounts/login/") else {
-      return completionHandler(.failure(GenericError.custom("Invalid URL.")))
-    }
-    #if os(iOS) && !targetEnvironment(macCatalyst)
-    let deviceVersion = UIDevice.current.systemVersion.replacingOccurrences(of: ".", with: "_")
-    customUserAgent = ["Mozilla/5.0 (iPhone; CPU iPhone OS \(deviceVersion) like Mac OS X)",
-                          "AppleWebKit/605.1.15 (KHTML, like Gecko)",
-                          "Mobile/15E148"].joined(separator: " ")
-    #else
-    customUserAgent = ["Mozilla/5.0 (iPhone; CPU iPhone OS 13_4_1 like Mac OS X)",
-                          "AppleWebKit/605.1.15 (KHTML, like Gecko)",
-                          "Mobile/15E148"].joined(separator: " ")
-    #endif
-
-    load(URLRequest(url: url))
   }
 
   // MARK: Clean cookies

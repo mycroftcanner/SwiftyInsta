@@ -57,8 +57,8 @@ public struct Device: Codable {
 
     init(brand: String,
          model: String,
-         phoneGuid: UUID,
-         deviceGuid: UUID,
+         phoneGuid: UUID = .init(),
+         deviceGuid: UUID = .init(),
          googleAdId: UUID,
          rankToken: UUID,
          androidBoardName: String,
